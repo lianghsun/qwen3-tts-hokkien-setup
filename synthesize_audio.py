@@ -32,15 +32,16 @@ SAMPLE_RATE   = 12000
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 循環使用的聲色描述（台語/閩南語說話者多樣性）
+# 描述風格參考官方範例：自然、情感豐富、具體
 VOICE_DESIGNS = [
-    "溫柔知性的台灣閩南語中年女聲，語調平穩自然，咬字清晰，帶有台灣口音。",
-    "醇厚低沉的台灣閩南語中年男聲，語速平穩，語氣沉著，帶有台灣口音。",
-    "活潑明亮的台灣閩南語年輕女聲，語調略有起伏，親切自然，帶有台灣口音。",
-    "清朗自然的台灣閩南語年輕男聲，語速適中，語氣輕鬆，帶有台灣口音。",
-    "慈祥和藹的台灣閩南語老年女聲，語速稍慢，語氣溫和，帶有台灣口音。",
-    "穩重沙啞的台灣閩南語老年男聲，語速較慢，語氣厚實，帶有台灣口音。",
-    "甜美柔和的台灣閩南語年輕女聲，音調偏高，語氣親切，帶有台灣口音。",
-    "幹練俐落的台灣閩南語成年男聲，語速較快，語氣肯定，帶有台灣口音。",
+    "一位台灣中年女性，說話帶有濃厚的閩南語腔調，語調溫柔自然，如同在日常閒話家常，聲音親切而有溫度。",
+    "一位台灣中年男性，說話帶有道地的閩南語口音，語氣穩重從容，像是長輩在細說往事，聲音渾厚有力。",
+    "一位台灣年輕女性，閩南語腔調鮮明，語調輕快活潑，充滿朝氣，說話自然流暢，像在跟朋友聊天。",
+    "一位台灣年輕男性，帶有台灣閩南語口音，說話清晰俐落，語氣輕鬆隨和，像在輕描淡寫地分享日常。",
+    "一位台灣阿嬤，閩南語腔調道地純正，語速稍緩，語氣慈祥溫和，帶著歲月沉澱的從容感。",
+    "一位台灣老先生，說話帶有濃厚閩南語腔，語速緩慢，聲音沙啞厚實，如同老故事說書人般娓娓道來。",
+    "一位台灣年輕女性，閩南語口音清晰，聲音甜美明亮，語氣輕快，帶著年輕人特有的活力與熱情。",
+    "一位台灣成熟男性，閩南語腔調自然流露，語速適中，說話條理清晰，帶有自信從容的氣息。",
 ]
 
 
@@ -54,8 +55,14 @@ def parse_args():
     p.add_argument("--db-path",       default=os.path.join(SCRIPT_DIR, "synthesis_checkpoint.db"))
     p.add_argument("--upload-every",  type=int, default=200)
     p.add_argument("--max-disk-gb",   type=float, default=20.0)
-    p.add_argument("--batch-size",    type=int, default=8)
-    p.add_argument("--max-samples",   type=int, default=0)
+    p.add_argument("--batch-size",           type=int,   default=8)
+    p.add_argument("--max-samples",          type=int,   default=0)
+    p.add_argument("--temperature",          type=float, default=0.7,
+                   help="主模型 temperature（預設 0.7，越低越穩定）")
+    p.add_argument("--top-p",                type=float, default=0.9)
+    p.add_argument("--repetition-penalty",   type=float, default=1.1)
+    p.add_argument("--subtalker-temperature",type=float, default=0.7,
+                   help="聲色風格 temperature（預設 0.7）")
     return p.parse_args()
 
 
@@ -268,6 +275,10 @@ def worker_fn(worker_id, n_workers, args_dict):
                 text=texts,
                 language=["auto"] * len(texts),
                 instruct=instructs,
+                temperature=args_dict["temperature"],
+                top_p=args_dict["top_p"],
+                repetition_penalty=args_dict["repetition_penalty"],
+                subtalker_temperature=args_dict["subtalker_temperature"],
             )
         except Exception as e:
             log.error("Batch failed (voice=%s): %s", voice_desc[:20], e)
@@ -398,9 +409,13 @@ pretty_name: Taiwanese Hokkien TTS Audio (Qwen3-TTS VoiceDesign)
         "db_path":      args.db_path,
         "upload_every": args.upload_every,
         "max_disk_gb":  args.max_disk_gb,
-        "batch_size":   args.batch_size,
-        "max_samples":  args.max_samples,
-        "hf_token":     HF_TOKEN,
+        "batch_size":           args.batch_size,
+        "max_samples":          args.max_samples,
+        "temperature":          args.temperature,
+        "top_p":                args.top_p,
+        "repetition_penalty":   args.repetition_penalty,
+        "subtalker_temperature":args.subtalker_temperature,
+        "hf_token":             HF_TOKEN,
     }
 
     mp.set_start_method("spawn", force=True)
