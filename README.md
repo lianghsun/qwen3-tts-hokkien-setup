@@ -10,13 +10,13 @@
 
 | | CosyVoice3 | Qwen3-TTS |
 |---|---|---|
-| 說話者 | TAT + Common Voice 種子音檔 | 9 個預設說話者循環 |
+| 模型 | Fun-CosyVoice3-0.5B | Qwen3-TTS-12Hz-1.7B-Base |
+| 說話者 | TAT + Common Voice 種子音檔 | TAT + Common Voice 種子音檔（x-vector cloning） |
 | 輸出取樣率 | 22050 Hz | 12000 Hz |
-| Batch 支援 | 無（每次 1 筆） | 原生支援 |
+| Batch 支援 | 無（每次 1 筆） | 原生支援（同一批共用同一說話者） |
 | vLLM 支援 | 無 | vLLM-Omni（獨立專案） |
 
-> **注意**：Qwen3-TTS 使用預設說話者，不接受外部 reference audio。
-> 若需聲色克隆，請改用 `Qwen3-TTS-12Hz-1.7B-Base` 搭配 vLLM-Omni ICL 模式（尚未實作）。
+批次策略：每 `batch_size` 筆文字共用同一個種子說話者（依 batch 序號循環），以啟用原生 batch inference，兼顧效率與多樣性。
 
 ---
 
