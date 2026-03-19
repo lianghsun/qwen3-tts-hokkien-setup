@@ -379,7 +379,7 @@ def worker_fn(worker_id: int, n_workers: int, args_dict: dict):
             )
             wavs, sr = model.generate_voice_clone(
                 text=texts,
-                language=["Min-nan"] * len(texts),
+                language=["auto"] * len(texts),
                 voice_clone_prompt=prompt_items,
             )
         except Exception as e:
